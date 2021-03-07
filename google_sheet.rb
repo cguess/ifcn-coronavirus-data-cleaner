@@ -42,14 +42,13 @@ class GoogleSheetManager
   ##
   def process
     progressbar = ProgressBar.create(title: "Rows", total: @values.count, format: "%B | %c/%u | %p% | %E ")
-    rows = []
+    rows = [["Valid Original URL?", "Valid Article URL?"]]
     @values.each_with_index do |row, index|
       next if index == 0
-      rows << [validate_url(row[9]), validate_url(row[10])]
-      # row << validate_url(row[9]).to_s
-      # row << validate_url(row[10]).to_s
+      valid_original_url = validate_url(row[9]) ? "" : "DIRTY"
+      valid_article_url = validate_url(row[10]) ? "" : "DIRTY"
+      rows << [valid_original_url, valid_article_url]
       progressbar.increment
-      break if index == 5
     end
 
     update_sheet(rows)
@@ -94,7 +93,7 @@ class GoogleSheetManager
   # Update the sheet with the go/no-go values
   ##
   def update_sheet(rows)
-    a1_notation = "'Published factchecks'!R2:S#{rows.count + 1}"
+    a1_notation = "'Published factchecks'!R1:S#{rows.count}"
 
     request_body = Google::Apis::SheetsV4::BatchUpdateValuesRequest.new
     value_range = Google::Apis::SheetsV4::ValueRange.new
